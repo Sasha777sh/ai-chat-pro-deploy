@@ -2,7 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { createClient } from '@/lib/supabase';
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
 export default function AdminPanel() {
   const [user, setUser] = useState<any>(null);
@@ -11,7 +14,7 @@ export default function AdminPanel() {
   const [prompts, setPrompts] = useState<any[]>([]);
   const [stats, setStats] = useState<any>(null);
   const router = useRouter();
-  const supabase = createClient();
+  const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
   useEffect(() => {
     checkAdmin();
@@ -93,20 +96,21 @@ export default function AdminPanel() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
 
-      // Находим пользователя по email
-      const { data: targetUser } = await supabase.auth.admin.getUserByEmail(email);
-      if (!targetUser?.user) {
-        alert('Пользователь не найден');
-        return;
+      // Обновляем роль через API (нужен service role key на сервере)
+      const response = await fetch('/api/admin/make-admin', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Ошибка');
       }
 
-      // Обновляем роль
-      const { error } = await supabase
-        .from('profiles')
-        .update({ role: 'admin' })
-        .eq('id', targetUser.user.id);
-
-      if (error) throw error;
       alert('Пользователь назначен администратором');
       loadStats();
     } catch (error: any) {
