@@ -95,8 +95,14 @@ function SignupForm() {
       const { data: { session: currentSession } } = await supabase.auth.getSession();
       
       if (currentSession) {
-        console.log('Session confirmed, redirecting to chat');
-        router.push('/chat');
+        console.log('Session confirmed, redirecting to welcome');
+        // Проверяем, проходил ли пользователь онбординг
+        const onboardingCompleted = localStorage.getItem('onboarding_completed');
+        if (onboardingCompleted === 'true') {
+          router.push('/chat');
+        } else {
+          router.push('/welcome');
+        }
       } else {
         console.error('Session not found after signup, redirecting to login');
         setError('Сессия не установлена. Попробуйте войти вручную.');

@@ -56,7 +56,17 @@ function LoginForm() {
     if (data.session) {
       // Проверяем redirect параметр
       const redirect = searchParams.get('redirect');
-      router.push(redirect || '/chat');
+      if (redirect) {
+        router.push(redirect);
+      } else {
+        // Проверяем, проходил ли пользователь онбординг
+        const onboardingCompleted = localStorage.getItem('onboarding_completed');
+        if (onboardingCompleted === 'true') {
+          router.push('/chat');
+        } else {
+          router.push('/welcome');
+        }
+      }
     } else {
       console.error('No session after login');
       setError('Не удалось создать сессию. Попробуйте ещё раз.');
