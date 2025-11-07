@@ -14,8 +14,10 @@ export default function DemoPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
-  const [demoUsed, setDemoUsed] = useState(false);
+  const [userMessagesCount, setUserMessagesCount] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  
+  const DEMO_LIMIT = 2; // 2 сообщения пользователя
 
   useEffect(() => {
     scrollToBottom();
@@ -26,7 +28,7 @@ export default function DemoPage() {
   };
 
   const sendMessage = async () => {
-    if (!input.trim() || loading || demoUsed) return;
+    if (!input.trim() || loading || userMessagesCount >= DEMO_LIMIT) return;
 
     const userMessage = input.trim();
     setInput('');
@@ -34,6 +36,7 @@ export default function DemoPage() {
 
     // Добавляем сообщение пользователя
     setMessages((prev) => [...prev, { role: 'user', content: userMessage }]);
+    setUserMessagesCount((prev) => prev + 1);
 
     try {
       const response = await fetch('/api/demo', {
@@ -56,7 +59,6 @@ export default function DemoPage() {
           ...prev,
           { role: 'assistant', content: data.response || 'Нет ответа' },
         ]);
-        setDemoUsed(true);
       }
     } catch (error: any) {
       setMessages((prev) => [
@@ -102,7 +104,7 @@ export default function DemoPage() {
       <div className="bg-yellow-900/30 border-b border-yellow-800/50">
         <div className="max-w-4xl mx-auto px-4 py-3 text-center">
           <p className="text-yellow-200 text-sm">
-            ⚡ Демо-режим: 1 сообщение для знакомства. Для полного доступа —{' '}
+            ⚡ Демо-режим: {DEMO_LIMIT} сообщения для знакомства ({userMessagesCount}/{DEMO_LIMIT} использовано). Для полного доступа —{' '}
             <Link href="/signup" className="underline font-semibold">
               зарегистрируйся
             </Link>
@@ -161,10 +163,10 @@ export default function DemoPage() {
 
           {/* Input */}
           <div className="border-t border-gray-700 p-4">
-            {demoUsed ? (
+            {userMessagesCount >= DEMO_LIMIT ? (
               <div className="text-center py-4">
                 <p className="text-gray-400 mb-4">
-                  Демо завершено. Зарегистрируйся для продолжения общения.
+                  Демо завершено ({DEMO_LIMIT}/{DEMO_LIMIT} сообщений). Зарегистрируйся для продолжения общения.
                 </p>
                 <Link
                   href="/signup"
@@ -179,14 +181,14 @@ export default function DemoPage() {
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyPress={handleKeyPress}
-                  placeholder="Напиши что-нибудь..."
+                  placeholder={`Напиши что-нибудь... (${userMessagesCount}/${DEMO_LIMIT})`}
                   className="flex-1 bg-gray-700 border border-gray-600 rounded-xl px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 resize-none"
                   rows={2}
-                  disabled={loading}
+                  disabled={loading || userMessagesCount >= DEMO_LIMIT}
                 />
                 <button
                   onClick={sendMessage}
-                  disabled={!input.trim() || loading}
+                  disabled={!input.trim() || loading || userMessagesCount >= DEMO_LIMIT}
                   className="px-6 py-3 bg-blue-600 hover:bg-blue-500 disabled:bg-gray-700 disabled:text-gray-500 text-white font-semibold rounded-xl transition-colors"
                 >
                   Отправить
