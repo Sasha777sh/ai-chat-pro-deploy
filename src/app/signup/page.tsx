@@ -79,21 +79,41 @@ function SignupForm() {
       setTimeout(() => {
         router.push('/login?message=check-email');
       }, 3000);
-    } else if (data.session) {
-      // Автоматически залогинен
-      console.log('Auto-login successful');
-      setSuccess(true);
-      setTimeout(() => {
-        router.push('/chat');
-      }, 2000);
-    } else {
-      // Неожиданная ситуация
-      console.error('Unexpected signup result:', data);
-      setError('Произошла ошибка при регистрации. Попробуйте войти вручную.');
-      setTimeout(() => {
-        router.push('/login');
-      }, 2000);
+      setLoading(false);
+      return;
     }
+
+    // Если есть session, ждём немного чтобы cookies установились
+    if (data.session) {
+      console.log('Auto-login successful, waiting for session to be set...');
+      setSuccess(true);
+      
+      // Ждём немного, чтобы Supabase установил cookies
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Проверяем, что сессия действительно установлена
+      const { data: { session: currentSession } } = await supabase.auth.getSession();
+      
+      if (currentSession) {
+        console.log('Session confirmed, redirecting to chat');
+        router.push('/chat');
+      } else {
+        console.error('Session not found after signup, redirecting to login');
+        setError('Сессия не установлена. Попробуйте войти вручную.');
+        setTimeout(() => {
+          router.push('/login');
+        }, 2000);
+      }
+      setLoading(false);
+      return;
+    }
+
+    // Неожиданная ситуация
+    console.error('Unexpected signup result:', data);
+    setError('Произошла ошибка при регистрации. Попробуйте войти вручную.');
+    setTimeout(() => {
+      router.push('/login');
+    }, 2000);
     setLoading(false);
   };
 

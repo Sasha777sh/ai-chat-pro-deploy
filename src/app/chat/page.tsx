@@ -41,11 +41,31 @@ export default function ChatPage() {
   };
 
   const checkAuth = async () => {
+    // Проверяем сессию сначала
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    if (!session) {
+      // Если нет сессии, проверяем пользователя
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        console.log('No session and no user, redirecting to login');
+        router.push('/login');
+        return;
+      }
+      // Если есть user но нет session, пытаемся обновить
+      console.log('User exists but no session, refreshing...');
+      await supabase.auth.refreshSession();
+    }
+
+    // Проверяем пользователя
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
+      console.log('No user after session check, redirecting to login');
       router.push('/login');
       return;
     }
+
+    console.log('Auth check passed, user:', user.id);
     setUser(user);
     await createOrGetSession();
   };
