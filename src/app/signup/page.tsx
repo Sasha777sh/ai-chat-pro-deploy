@@ -12,14 +12,43 @@ function SignupForm() {
   
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [passwordConfirm, setPasswordConfirm] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+  
+  const validatePassword = (pwd: string): string | null => {
+    if (pwd.length < 8) {
+      return 'Пароль должен быть не менее 8 символов';
+    }
+    if (!/[A-Za-z]/.test(pwd)) {
+      return 'Пароль должен содержать хотя бы одну букву';
+    }
+    if (!/[0-9]/.test(pwd)) {
+      return 'Пароль должен содержать хотя бы одну цифру';
+    }
+    return null;
+  };
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
+
+    // Валидация пароля
+    const passwordError = validatePassword(password);
+    if (passwordError) {
+      setError(passwordError);
+      setLoading(false);
+      return;
+    }
+
+    // Проверка совпадения паролей
+    if (password !== passwordConfirm) {
+      setError('Пароли не совпадают');
+      setLoading(false);
+      return;
+    }
 
     const { error } = await supabase.auth.signUp({
       email,
@@ -75,7 +104,22 @@ function SignupForm() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              minLength={6}
+              minLength={8}
+              className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
+              placeholder="Минимум 8 символов, буквы и цифры"
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              Минимум 8 символов, должна быть хотя бы одна буква и одна цифра
+            </p>
+          </div>
+          <div>
+            <label className="block text-sm mb-2">Подтвердите пароль</label>
+            <input
+              type="password"
+              value={passwordConfirm}
+              onChange={(e) => setPasswordConfirm(e.target.value)}
+              required
+              minLength={8}
               className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
             />
           </div>

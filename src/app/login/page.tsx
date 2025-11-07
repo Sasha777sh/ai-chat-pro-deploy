@@ -17,15 +17,24 @@ export default function LoginPage() {
     setLoading(true);
     setError('');
 
+    if (!password || password.length < 6) {
+      setError('Пароль должен быть не менее 6 символов');
+      setLoading(false);
+      return;
+    }
+
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
 
     if (error) {
-      setError(error.message);
+      setError(error.message || 'Неверный email или пароль');
     } else {
-      router.push('/chat');
+      // Проверяем redirect параметр
+      const urlParams = new URLSearchParams(window.location.search);
+      const redirect = urlParams.get('redirect');
+      router.push(redirect || '/chat');
     }
     setLoading(false);
   };

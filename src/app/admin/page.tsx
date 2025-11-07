@@ -25,7 +25,7 @@ export default function AdminPanel() {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
-        router.push('/login');
+        router.push('/login?redirect=/admin');
         return;
       }
 
@@ -44,10 +44,19 @@ export default function AdminPanel() {
         return;
       }
 
+      // Дополнительная проверка: убеждаемся что пользователь действительно админ
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      if (!currentUser || currentUser.id !== session.user.id) {
+        alert('Ошибка проверки доступа. Пожалуйста, войдите снова.');
+        router.push('/login');
+        return;
+      }
+
       setIsAdmin(true);
       setLoading(false);
     } catch (error) {
       console.error('Admin check error:', error);
+      alert('Ошибка доступа к админ-панели');
       router.push('/');
     }
   };
