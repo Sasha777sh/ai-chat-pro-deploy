@@ -104,7 +104,7 @@ export default function AccountPage() {
             <div>
               <p className="text-gray-300 mb-4">У вас активна подписка Pro</p>
               <div className="space-y-2 text-gray-300">
-                <p>✅ Безлимит сообщений</p>
+                <p>✅ 500 сообщений в месяц</p>
                 <p>✅ Полная история чатов</p>
                 <p>✅ Приоритетная поддержка</p>
               </div>

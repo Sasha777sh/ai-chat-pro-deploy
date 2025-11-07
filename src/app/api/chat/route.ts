@@ -45,6 +45,7 @@ export async function POST(request: NextRequest) {
     const isPro = profile?.subscription_tier === 'pro';
 
     if (!isPro) {
+      // Free: 10 сообщений/день
       const today = new Date().toISOString().split('T')[0];
       const { count } = await supabase
         .from('chat_messages')
@@ -58,6 +59,33 @@ export async function POST(request: NextRequest) {
           { error: 'Лимит бесплатных сообщений исчерпан. Обновите тариф до Pro.' },
           { status: 403 }
         );
+      }
+    } else {
+      // Pro: 500 сообщений/месяц
+      const now = new Date();
+      const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+      
+      // Считаем все сообщения пользователя за текущий месяц
+      const { data: sessions } = await supabase
+        .from('chat_sessions')
+        .select('id')
+        .eq('user_id', user.id);
+
+      if (sessions && sessions.length > 0) {
+        const sessionIds = sessions.map(s => s.id);
+        const { count } = await supabase
+          .from('chat_messages')
+          .select('*', { count: 'exact', head: true })
+          .in('session_id', sessionIds)
+          .eq('role', 'user')
+          .gte('created_at', firstDayOfMonth);
+
+        if (count && count >= 500) {
+          return NextResponse.json(
+            { error: 'Лимит Pro сообщений исчерпан (500/мес). Обновите подписку для продолжения.' },
+            { status: 403 }
+          );
+        }
       }
     }
 
@@ -128,7 +156,7 @@ export async function POST(request: NextRequest) {
       model: 'gpt-4o-mini',
       messages: messages as any,
       temperature: 0.7,
-      max_tokens: 500,
+      max_tokens: 300, // Оптимизация: уменьшено с 500 до 300 для экономии
     });
 
     const aiResponse = completion.choices[0]?.message?.content || 'Ошибка получения ответа';
