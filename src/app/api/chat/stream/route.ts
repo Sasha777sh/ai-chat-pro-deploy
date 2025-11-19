@@ -63,7 +63,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const token = authHeader.replace('Bearer ', '');
+    const token = authHeader.replace('Bearer ', '').trim();
+    
+    if (!token) {
+      console.error('Empty token');
+      return new Response(
+        JSON.stringify({ error: 'Токен не предоставлен' }),
+        { status: 401, headers: { 'Content-Type': 'application/json' } }
+      );
+    }
     
     // Для проверки пользовательского токена используем anon key
     // Service role key обходит RLS и не подходит для проверки пользовательских токенов
@@ -72,9 +80,17 @@ export async function POST(request: NextRequest) {
     const { data: { user }, error: authError } = await supabaseAuth.auth.getUser(token);
 
     if (authError || !user) {
-      console.error('Auth error:', authError);
+      console.error('Auth error:', {
+        error: authError,
+        message: authError?.message,
+        tokenLength: token.length,
+        tokenStart: token.substring(0, 20) + '...'
+      });
       return new Response(
-        JSON.stringify({ error: authError?.message || 'Не авторизован' }),
+        JSON.stringify({ 
+          error: authError?.message || 'Не авторизован',
+          details: process.env.NODE_ENV === 'development' ? authError : undefined
+        }),
         { status: 401, headers: { 'Content-Type': 'application/json' } }
       );
     }

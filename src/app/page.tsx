@@ -102,10 +102,18 @@ export default function HomePage() {
       return next;
     });
 
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    if (sessionError || !session) {
+      console.error('Session error:', sessionError);
       router.push('/login');
       throw new Error('Сессия не найдена');
+    }
+
+    // Проверяем, что токен есть
+    if (!session.access_token) {
+      console.error('No access token in session');
+      router.push('/login');
+      throw new Error('Токен не найден');
     }
 
     // Save user message
