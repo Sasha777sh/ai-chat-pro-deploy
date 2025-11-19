@@ -11,6 +11,7 @@ import WhyDifferentBlock from '@/components/WhyDifferentBlock';
 import MarketingHero from '@/components/MarketingHero';
 import WhatIsWhatIsNot from '@/components/WhatIsWhatIsNot';
 import FullDescription from '@/components/FullDescription';
+import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import type { VoiceId } from '@/lib/prompts';
 
 type Step = 'onboarding' | 'chat' | 'paywall';
@@ -233,27 +234,8 @@ export default function HomePage() {
   return (
     <main className="min-h-screen bg-edem-dark text-edem-main">
       {/* Language Switcher */}
-      <div className="flex justify-end p-4 gap-2 text-edem-secondary sticky top-0 z-20 bg-edem-dark/80 backdrop-blur-sm">
-        <button
-          onClick={() => setLocale('ru')}
-          className={`px-3 py-1 rounded-lg transition-colors ${
-            locale === 'ru'
-              ? 'bg-edem-live text-white'
-              : 'text-edem-muted hover:text-edem-secondary'
-          }`}
-        >
-          RU
-        </button>
-        <button
-          onClick={() => setLocale('en')}
-          className={`px-3 py-1 rounded-lg transition-colors ${
-            locale === 'en'
-              ? 'bg-edem-live text-white'
-              : 'text-edem-muted hover:text-edem-secondary'
-          }`}
-        >
-          EN
-        </button>
+      <div className="flex justify-end p-4 sticky top-0 z-20 bg-edem-dark/80 backdrop-blur-sm">
+        <LanguageSwitcher />
       </div>
 
       {/* Onboarding */}
