@@ -102,15 +102,30 @@ export default function HomePage() {
       return next;
     });
 
-    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    // Сначала проверяем пользователя - это автоматически обновит токен если нужно
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError || !user) {
+      console.error('User auth error:', userError);
+      router.push('/login');
+      throw new Error('Пользователь не авторизован');
+    }
+
+    // Получаем сессию после проверки пользователя
+    let { data: { session }, error: sessionError } = await supabase.auth.getSession();
     if (sessionError || !session) {
       console.error('Session error:', sessionError);
-      router.push('/login');
-      throw new Error('Сессия не найдена');
+      // Пробуем обновить сессию
+      const { data: { session: refreshed }, error: refreshError } = await supabase.auth.refreshSession();
+      if (refreshError || !refreshed) {
+        router.push('/login');
+        throw new Error('Сессия не найдена');
+      }
+      // Используем обновлённую сессию
+      session = refreshed;
     }
 
     // Проверяем, что токен есть
-    if (!session.access_token) {
+    if (!session?.access_token) {
       console.error('No access token in session');
       router.push('/login');
       throw new Error('Токен не найден');
