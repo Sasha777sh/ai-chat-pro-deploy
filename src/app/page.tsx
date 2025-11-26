@@ -148,9 +148,8 @@ export default function HomePage() {
       body: JSON.stringify({
         sessionId,
         message: text,
-        voiceId: voice,
+        voiceId: voice, // Используем выбранный пользователем голос
         locale,
-        autoSelectVoice: true, // Включаем авто-выбор голоса
       }),
     });
 

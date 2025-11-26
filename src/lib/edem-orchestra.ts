@@ -1,11 +1,26 @@
 /**
  * EDEM ORCHESTRA
  * 
- * Автоматический выбор голоса на основе анализа сообщения пользователя.
- * Анализирует тон, эмоции, длину, вопросы и выбирает наиболее подходящий голос.
+ * Эмоциональный детектор для адаптации голосов под состояние пользователя.
  */
 
 import type { VoiceId } from './prompts';
+
+export type EmotionState = 'tired' | 'anxious' | 'lost' | 'angry' | 'neutral';
+
+/**
+ * EmoDetect v1 — определяет эмоциональное состояние пользователя
+ */
+export function detectEmotion(message: string): EmotionState {
+  const m = message.toLowerCase();
+
+  if (/(не хочу|устал|ляжу|сил нет|заебал|выгорел|устала|устало|устали|выгорела|выгорел|выгорели)/.test(m)) return 'tired';
+  if (/(боюсь|тревога|что делать|паника|страшно|тревожно|беспокоюсь|волнуюсь|нервничаю)/.test(m)) return 'anxious';
+  if (/(не знаю|пусто|ничего не чувствую|потерялся|потерялась|запутался|запуталась|не понимаю)/.test(m)) return 'lost';
+  if (/(блядь|нахуй|сука|ебан|выбесило|злюсь|злюсь|злишься|злится|бесит|бесит|ненавижу)/.test(m)) return 'angry';
+
+  return 'neutral';
+}
 
 export interface MessageAnalysis {
   tone: 'aggressive' | 'sad' | 'lost' | 'questioning' | 'calm' | 'excited' | 'neutral';
@@ -87,31 +102,12 @@ export function analyzeMessage(message: string): MessageAnalysis {
 
 /**
  * Выбирает наиболее подходящий голос на основе анализа
+ * (Не используется - пользователь выбирает голос вручную)
  */
 export function selectVoice(analysis: MessageAnalysis, previousVoice?: VoiceId): VoiceId {
-  // Если человек теряется или путается → Зеркало (вопросы)
-  if (analysis.needsClarity && analysis.hasQuestions) {
-    return 'mirror';
-  }
-
   // Если человек врёт себе или агрессия → Тень (честность)
   if (analysis.needsChallenge || analysis.tone === 'aggressive') {
     return 'shadow';
-  }
-
-  // Если нужен комфорт, грусть, страх → Ребёнок (мягкость)
-  if (analysis.needsComfort || analysis.tone === 'sad') {
-    return 'child';
-  }
-
-  // Если длинное сообщение, много контекста → Мудрец (глубина)
-  if (analysis.length === 'long' && !analysis.hasQuestions) {
-    return 'sage';
-  }
-
-  // Если само-сомнение, неуверенность → Зеркало (вопросы для ясности)
-  if (analysis.selfDoubt) {
-    return 'mirror';
   }
 
   // По умолчанию → Живой (базовый режим)
@@ -138,18 +134,6 @@ export function getVoiceExplanation(voice: VoiceId, analysis: MessageAnalysis): 
     shadow: {
       ru: 'Голос Тени — прямая честность и вскрытие',
       en: 'Voice of Shadow — direct honesty and uncovering',
-    },
-    mirror: {
-      ru: 'Голос Зеркала — вопросы для ясности',
-      en: 'Voice of Mirror — questions for clarity',
-    },
-    child: {
-      ru: 'Голос Ребёнка — мягкость и поддержка',
-      en: 'Voice of Child — softness and support',
-    },
-    sage: {
-      ru: 'Голос Мудреца — глубина и вектор',
-      en: 'Voice of Sage — depth and direction',
     },
   };
 

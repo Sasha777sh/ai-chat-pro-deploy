@@ -4,7 +4,7 @@
 
 **Ошибка:** "Your authentication token is not from a valid issuer"
 
-**Где:** https://chatedem.com при отправке сообщения в чат
+**Где:** <https://chatedem.com> при отправке сообщения в чат
 
 ---
 
@@ -13,7 +13,8 @@
 ### 1. Переменные добавлены на Vercel?
 
 **Проверь:**
-1. Открой: https://vercel.com/dashboard
+
+1. Открой: <https://vercel.com/dashboard>
 2. Найди проект (может быть `ai-chat-pro` или `chatedem.com`)
 3. Settings → Environment Variables
 4. Проверь наличие:
@@ -33,15 +34,17 @@
 **КРИТИЧНО:** `NEXT_PUBLIC_SUPABASE_ANON_KEY` должен быть anon key, НЕ service role key!
 
 **Как проверить:**
+
 1. Скопируй `NEXT_PUBLIC_SUPABASE_ANON_KEY` с Vercel
-2. Открой: https://jwt.io
+2. Открой: <https://jwt.io>
 3. Вставь ключ в "Encoded"
 4. Проверь поле `"role"` в payload:
    - ✅ Должно быть `"anon"` (правильно)
    - ❌ Если `"service_role"` → это ошибка! Нужно заменить на anon key
 
 **Если неправильный:**
-- Открой: https://supabase.com/dashboard/project/jgnnrdrqzcwnhuuvhlfo/settings/api
+
+- Открой: <https://supabase.com/dashboard/project/jgnnrdrqzcwnhuuvhlfo/settings/api>
 - Скопируй правильный **anon/public key**
 - Обнови на Vercel
 - Передеплой проект
@@ -51,11 +54,13 @@
 ### 3. Проект передеплоен?
 
 **Проверь:**
+
 1. Vercel Dashboard → Deployments
 2. Посмотри последний деплой
 3. Когда был последний деплой?
 
 **Если деплой старый:**
+
 - Передеплой проект (Redeploy)
 - Или: `git commit --allow-empty -m "Redeploy" && git push`
 
@@ -79,15 +84,18 @@ cd /Users/sanecek/tema/ai-chat-pro
 ### ШАГ 2: Добавь на Vercel
 
 **1. Открой Vercel:**
-- https://vercel.com/dashboard
+
+- <https://vercel.com/dashboard>
 - Найди проект (может быть `ai-chat-pro` или `chatedem.com`)
 
 **2. Открой Environment Variables:**
+
 - Settings → Environment Variables
 
 **3. Добавь/обнови переменные:**
 
 **КРИТИЧЕСКИЕ (обязательно):**
+
 ```
 NEXT_PUBLIC_SUPABASE_URL=https://jgnnrdrqzcwnhuuvhlfo.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impnbm5yZHJxemN3bmh1dXZobGZvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU3NjU1NTgsImV4cCI6MjA3MTM0MTU1OH0.BZBBo_yNxr7EQqmiI6toKI8y9BEpSjbFQraCo_h7I4A
@@ -97,6 +105,7 @@ NEXT_PUBLIC_APP_URL=https://chatedem.com
 ```
 
 **⚠️ ВАЖНО:**
+
 - Если переменная уже есть → обнови её
 - Выбери окружения: **Production**, **Preview**
 - Сохрани изменения
@@ -108,11 +117,13 @@ NEXT_PUBLIC_APP_URL=https://chatedem.com
 **Обязательно передеплой после изменения переменных!**
 
 **Вариант А: Через Vercel Dashboard**
+
 1. Deployments → найди последний деплой
 2. Нажми "Redeploy"
 3. Подожди 2-3 минуты
 
 **Вариант Б: Через Git**
+
 ```bash
 cd /Users/sanecek/tema/ai-chat-pro
 git commit --allow-empty -m "Redeploy with correct env vars"
@@ -125,13 +136,14 @@ git push origin main
 
 **1. Подожди 2-3 минуты** после деплоя
 
-**2. Открой:** https://chatedem.com
+**2. Открой:** <https://chatedem.com>
 
 **3. Войди в аккаунт**
 
 **4. Отправь сообщение в чат**
 
 **5. Проверь:**
+
 - ✅ Если чат работает → проблема решена!
 - ❌ Если ошибка 401 → проверь логи Vercel (см. ниже)
 
@@ -140,20 +152,24 @@ git push origin main
 ## 🔍 ЕСЛИ НЕ ПОМОГЛО: Проверь логи
 
 **1. Открой Vercel Dashboard:**
+
 - Functions → Logs
 
 **2. Отправь сообщение в чат**
 
 **3. Посмотри логи:**
+
 - Найди ошибку 401
 - Посмотри детали ошибки
 
 **Что искать:**
+
 - "Invalid JWT" или "token is not from a valid issuer"
 - "NEXT_PUBLIC_SUPABASE_ANON_KEY is not defined"
 - Детали ошибки аутентификации
 
 **Если видишь ошибку про переменные:**
+
 - Переменные не загрузились
 - Нужно передеплоить проект
 
@@ -171,7 +187,7 @@ git push origin main
 - [ ] Сохранил изменения
 - [ ] Передеплоил проект (Redeploy)
 - [ ] Подождал 2-3 минуты
-- [ ] Протестировал на https://chatedem.com
+- [ ] Протестировал на <https://chatedem.com>
 - [ ] Проверил логи Vercel (если ошибка осталась)
 
 ---
@@ -181,7 +197,8 @@ git push origin main
 **90% случаев:** `NEXT_PUBLIC_SUPABASE_ANON_KEY` содержит service role key вместо anon key
 
 **Решение:**
-1. Открой: https://supabase.com/dashboard/project/jgnnrdrqzcwnhuuvhlfo/settings/api
+
+1. Открой: <https://supabase.com/dashboard/project/jgnnrdrqzcwnhuuvhlfo/settings/api>
 2. Скопируй правильный **anon/public key** (НЕ service role!)
 3. Обнови на Vercel
 4. Передеплой проект
@@ -193,6 +210,7 @@ git push origin main
 **Если хочешь быстро исправить:**
 
 1. **Получи переменные:**
+
    ```bash
    cd /Users/sanecek/tema/ai-chat-pro
    ./get-vercel-env.sh
@@ -214,4 +232,3 @@ git push origin main
 ---
 
 **Выполни эти шаги и ошибка 401 должна исчезнуть! 🚀**
-

@@ -12,9 +12,10 @@
 
 ### ШАГ 1: Открой Vercel Dashboard
 
-**Ссылка:** https://vercel.com/dashboard
+**Ссылка:** <https://vercel.com/dashboard>
 
 **Действия:**
+
 1. Войди в аккаунт (если нужно)
 2. Найди проект `ai-chat-pro` или `chatedem.com`
 3. Кликни на проект
@@ -24,6 +25,7 @@
 ### ШАГ 2: Открой Environment Variables
 
 **Путь:**
+
 1. Вкладка **Settings** (сверху)
 2. В меню слева выбери **Environment Variables**
 
@@ -32,6 +34,7 @@
 ### ШАГ 3: Добавь переменные
 
 **Для каждой переменной:**
+
 1. Нажми **"Add New"** (или **"Add"**)
 2. Введи название переменной
 3. Вставь значение (скопируй из списка ниже)
@@ -49,6 +52,7 @@
 **Название:** `NEXT_PUBLIC_SUPABASE_URL`
 
 **Значение:**
+
 ```
 https://jgnnrdrqzcwnhuuvhlfo.supabase.co
 ```
@@ -62,6 +66,7 @@ https://jgnnrdrqzcwnhuuvhlfo.supabase.co
 **Название:** `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 
 **Значение:**
+
 ```
 eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impnbm5yZHJxemN3bmh1dXZobGZvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU3NjU1NTgsImV4cCI6MjA3MTM0MTU1OH0.BZBBo_yNxr7EQqmiI6toKI8y9BEpSjbFQraCo_h7I4A
 ```
@@ -77,6 +82,7 @@ eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impnbm5yZHJ
 **Название:** `SUPABASE_SERVICE_ROLE_KEY`
 
 **Значение:**
+
 ```
 eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impnbm5yZHJxemN3bmh1dXZobGZvIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NTc2NTU1OCwiZXhwIjoyMDcxMzQxNTU4fQ.cmYE8P_vlN_YNjvXI6JqEb7hiheIC5YUe0ptu5rvW0Y
 ```
@@ -92,6 +98,7 @@ eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impnbm5yZHJ
 **Название:** `OPENAI_API_KEY`
 
 **Значение:**
+
 ```
 sk-proj-... (твой API ключ из .env.local)
 ```
@@ -105,6 +112,7 @@ sk-proj-... (твой API ключ из .env.local)
 **Название:** `NEXT_PUBLIC_APP_URL`
 
 **Значение:**
+
 ```
 https://chatedem.com
 ```
@@ -134,12 +142,14 @@ https://chatedem.com
 **ОБЯЗАТЕЛЬНО передеплой после добавления переменных!**
 
 **Действия:**
+
 1. В Vercel Dashboard открой вкладку **Deployments**
 2. Найди последний деплой
 3. Нажми **"Redeploy"** (три точки → Redeploy)
 4. Подожди 2-3 минуты
 
 **Или через Git:**
+
 ```bash
 cd /Users/sanecek/tema/ai-chat-pro
 git commit --allow-empty -m "Add Supabase env vars to Vercel"
@@ -152,13 +162,14 @@ git push origin main
 
 **1. Подожди 2-3 минуты** после деплоя
 
-**2. Открой:** https://chatedem.com
+**2. Открой:** <https://chatedem.com>
 
 **3. Войди в аккаунт** (зарегистрируйся, если нужно)
 
 **4. Отправь сообщение в чат**
 
 **5. Проверь:**
+
 - ✅ Если чат работает → проблема решена!
 - ❌ Если ошибка 401 → проверь логи Vercel (см. ниже)
 
@@ -169,20 +180,24 @@ git push origin main
 ### Проверь логи Vercel
 
 **1. Открой Vercel Dashboard:**
+
 - Functions → Logs
 
 **2. Отправь сообщение в чат**
 
 **3. Посмотри логи:**
+
 - Найди ошибку 401
 - Посмотри детали
 
 **Что искать:**
+
 - "Your authentication token is not from a valid issuer"
 - "NEXT_PUBLIC_SUPABASE_ANON_KEY is not defined"
 - Детали ошибки аутентификации
 
 **Если видишь ошибку про переменные:**
+
 - Переменные не загрузились
 - Нужно передеплоить проект ещё раз
 
@@ -191,13 +206,16 @@ git push origin main
 ## 📊 СТАТУС
 
 **✅ Проблема определена:**
+
 - Отсутствие переменных Supabase на Vercel
 
 **✅ Решение найдено:**
+
 - Добавить переменные Supabase на Vercel
 - Передеплоить проект
 
 **⏳ Осталось:**
+
 - Добавить переменные на Vercel (вручную)
 - Передеплоить проект
 - Протестировать
@@ -209,6 +227,7 @@ git push origin main
 **Если хочешь быстро скопировать все переменные:**
 
 Выполни в терминале:
+
 ```bash
 cd /Users/sanecek/tema/ai-chat-pro && ./get-vercel-env.sh
 ```
@@ -218,4 +237,3 @@ cd /Users/sanecek/tema/ai-chat-pro && ./get-vercel-env.sh
 ---
 
 **Выполни эти шаги и ошибка 401 исчезнет! 🚀**
-

@@ -102,7 +102,7 @@ export default function ChatPanel({
         <div className="max-w-4xl mx-auto">
           <h2 className="text-lg font-semibold text-edem-main mb-3">{content.chooseVoice}</h2>
           <div className="flex gap-2 overflow-x-auto pb-2">
-            {VOICE_DEFINITIONS.slice(0, 3).map((voice) => (
+            {VOICE_DEFINITIONS.map((voice) => (
               <button
                 key={voice.id}
                 onClick={() => setSelectedVoice(voice.id as VoiceId)}

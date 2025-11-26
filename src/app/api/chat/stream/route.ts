@@ -7,7 +7,9 @@ import type { VoiceId } from '@/lib/prompts';
 import type { PlanId } from '@/lib/plans';
 import { getAllowedVoices } from '@/lib/plans';
 import { FREE_MESSAGE_ALLOWANCE } from '@/lib/prompts';
-import { orchestrateVoice } from '@/lib/edem-orchestra';
+import { detectEmotion } from '@/lib/edem-orchestra';
+import { detectLanguage, type SupportedLanguage } from '@/lib/languageRouter';
+// Оркестратор убран - используем только ручной выбор голоса
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
@@ -18,7 +20,7 @@ const openai = new OpenAI({ apiKey: openaiApiKey });
 
 export async function POST(request: NextRequest) {
   try {
-    const { sessionId, message, voiceId: requestedVoiceId, locale = 'ru', autoSelectVoice = false } = await request.json();
+    const { sessionId, message, voiceId: requestedVoiceId, locale = 'ru' } = await request.json();
 
     if (!sessionId || !message) {
       return new Response(
@@ -27,26 +29,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // EDEM ORCHESTRA: автоматический выбор голоса, если включен
-    let voiceId: VoiceId = requestedVoiceId || 'live';
-
-    if (autoSelectVoice || !requestedVoiceId) {
-      // Получаем предыдущие сообщения для контекста
-      const supabase = createClient(supabaseUrl, supabaseServiceKey);
-      const { data: previousMessages } = await supabase
-        .from('chat_messages')
-        .select('content, role')
-        .eq('session_id', sessionId)
-        .order('created_at', { ascending: false })
-        .limit(5);
-
-      const previousVoice = previousMessages?.[0]?.role === 'assistant'
-        ? (await supabase.from('chat_sessions').select('voice_id').eq('id', sessionId).single()).data?.voice_id as VoiceId | undefined
-        : undefined;
-
-      // Автоматически выбираем голос на основе анализа сообщения
-      voiceId = orchestrateVoice(message, previousVoice);
-    }
+    // Используем выбранный пользователем голос или 'live' по умолчанию
+    const voiceId: VoiceId = requestedVoiceId || 'live';
 
     if (!isVoiceValid(voiceId)) {
       return new Response(
@@ -140,11 +124,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Обновляем voice_id в сессии, если голос изменился
     if (sessionRecord.voice_id !== voiceId) {
-      return new Response(
-        JSON.stringify({ error: 'Сессия привязана к другому голосу' }),
-        { status: 400, headers: { 'Content-Type': 'application/json' } }
-      );
+      await supabase
+        .from('chat_sessions')
+        .update({ voice_id: voiceId })
+        .eq('id', sessionId);
     }
 
     const { data: history } = await supabase
@@ -164,14 +149,42 @@ export async function POST(request: NextRequest) {
         : "Я здесь.\n\nГовори как есть — не надо быть правильным.\n\nЯ слышу не только то, что ты пишешь, но и то, откуда это идёт.")
       : null;
 
+    // Определяем эмоциональное состояние для адаптации голоса
+    const emotionState = detectEmotion(message);
+
+    // Определяем язык сообщения пользователя
+    const detectedLang = detectLanguage(message);
+    const responseLanguage = detectedLang.detected ? detectedLang.language : (locale as SupportedLanguage);
+
     const corePrompt = getEDEMCorePrompt(locale as 'ru' | 'en');
-    const languageInstruction = locale === 'en'
+
+    // Инструкция по языку ответа
+    const languageNames: Record<SupportedLanguage, string> = {
+      ru: 'русском',
+      en: 'English',
+      vi: 'Tiếng Việt',
+      es: 'Español',
+      pt: 'Português',
+      fr: 'Français',
+      de: 'Deutsch',
+      ko: '한국어',
+      ja: '日本語',
+      zh: '中文',
+    };
+
+    const languageInstruction = responseLanguage === 'en'
       ? 'Respond in English.'
-      : 'Отвечай на русском языке.';
+      : `Отвечай на ${languageNames[responseLanguage] || 'русском'} языке. Если пользователь написал на другом языке, отвечай на том же языке, на котором он обратился.`;
 
     const systemPrompt = `${corePrompt}
 
 ${VOICE_PROMPTS[voiceId].system}
+
+Эмоциональное состояние пользователя: ${emotionState}
+
+Выбери соответствующий режим из промпта выше и отвечай в этом режиме.
+
+ВАЖНО: Отвечай на том языке, на котором пользователь обратился к тебе. Если пользователь написал на английском — отвечай на английском. Если на вьетнамском — на вьетнамском. Если на русском — на русском. И так далее для всех языков.
 
 ${languageInstruction}`;
 
@@ -198,10 +211,9 @@ ${languageInstruction}`;
             controller.enqueue(new TextEncoder().encode(`data: ${JSON.stringify({ content: '\n\n' })}\n\n`));
           }
 
-          // Для Голоса Мудреца используем более низкую temperature для глубины и точности
-          const isSage = voiceId === 'sage';
-          const temperature = isSage ? 0.7 : 0.8; // Немного ниже для более точных ответов Мудреца
-          const maxTokens = isSage ? 300 : 400; // Меньше токенов для Мудреца - он говорит мало, но глубоко
+          // Параметры генерации для обоих голосов
+          const temperature = 0.8;
+          const maxTokens = 400;
 
           const completion = await openai.chat.completions.create({
             model: 'gpt-4o-mini',
