@@ -6,7 +6,7 @@ import Link from 'next/link';
 // EDEM Landing - Single-file React component (Tailwind CSS)
 // Обновлено под систему из 2 голосов
 
-export default function EDEM_Landing() {
+export default function EDEMLanding() {
   return (
     <div className="min-h-screen bg-[#0b0b0b] text-gray-100 antialiased">
       <header className="max-w-6xl mx-auto px-6 py-8 flex items-center justify-between">
